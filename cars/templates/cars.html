@@ -4,13 +4,11 @@
     </head>
     {% block content %}
         <body>
-            <h3>Seja bem vindo!</h3>
-            <h4>Meus carros</h4>
-            <ul>
-                <li>Modelo -> {{ cars.model }}</li>
-                <li>Ano -> {{ cars.year }}</li>
-                <li>Pintura -> {{ cars.color }}</li>
-            </ul>
+            <h2>Seja bem vindo!</h2>
+            <h3>Meus carros</h3>
+            {% for car in cars %}
+                <h4>{{ car.brand }} - {{ car.model }} - {{ car.factory_year }}</h4>
+            {% endfor %}
         </body>
     {% endblock %}
 </html>
