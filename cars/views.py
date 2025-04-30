@@ -3,11 +3,11 @@ from cars.models import Car
 
 # Create your views here.
 def car_view(request):
-    # cars = Car.objects.filter(brand__name='Chevrolet')
-    # cars = Car.objects.filter(model__icontains='onix')
-    print(request.GET)
+    cars = Car.objects.all().order_by('model')
+    search = request.GET.get('search')
 
-    cars = Car.objects.all()
+    if search:
+        cars = Car.objects.filter(model__icontains=search).order_by('model')
 
     return render(request,
                   'cars.html',
