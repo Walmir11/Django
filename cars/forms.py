@@ -15,7 +15,7 @@ class CarModelForm(forms.ModelForm):
 
     def clean_factory_year(self):
         factory_year = self.cleaned_data.get('factory_year')
-        if factory_year > 1900:
+        if factory_year < 1900:
             self.add_error('year', f'Ano deve ser maior ao ano de 1900. Ano atual: {factory_year}')
         return factory_year
 
