@@ -44,8 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'cars',
     'accounts',
+    'agendamento',
 ]
 
 MIDDLEWARE = [
@@ -131,3 +131,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+# Aponta para nosso modelo de usuário customizado
+AUTH_USER_MODEL = 'accounts.User'
+
+LOGIN_REDIRECT_URL = 'painel' # Rota para onde o usuário vai após o login
+LOGOUT_REDIRECT_URL = 'login' # Rota para onde o usuário vai após o logout
