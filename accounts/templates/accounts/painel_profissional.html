@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Painel do Profissional{% endblock %}
+
+{% block content %}
+  <h2>Olá, {{ user.first_name }}!</h2>
+  <p>Bem-vindo(a) ao seu painel de profissional.</p>
+
+  <h3>Sua Agenda de Hoje</h3>
+  {# Aqui você irá mostrar a agenda do dia para o profissional #}
+
+  <h3>Gerenciar Serviços</h3>
+  {# Aqui você pode adicionar links para criar/editar serviços #}
+{% endblock %}
