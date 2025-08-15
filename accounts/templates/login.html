@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+  <style>
+    .form-container {
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .form-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .form-container p {
+      margin-bottom: 15px;
+    }
+    .form-container label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .form-container input[type="text"],
+    .form-container input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box; /* Important */
+    }
+    .form-container button {
+      width: 100%;
+      padding: 10px;
+      background-color: #0096c7;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .form-container button:hover {
+      background-color: #0077a2;
+    }
+    .errorlist {
+      list-style-type: none;
+      padding: 0;
+      margin: 0 0 15px 0;
+      color: #d9534f;
+      background-color: #f2dede;
+      border: 1px solid #ebccd1;
+      border-radius: 4px;
+      padding: 10px;
+    }
+  </style>
+  <div class="form-container">
+    <form method="post" novalidate>
+      <h2>Login</h2>
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+        <p><label for="{{ form.username.id_for_label }}">Email:</label> {{ form.username }}</p>
+        <p><label for="{{ form.password.id_for_label }}">Senha:</label> {{ form.password }}</p>
+
+        <button type="submit">Entrar</button>
+    </form>
+    <p style="text-align: center; margin-top: 20px;">
+        Não tem uma conta?
+        <a href="{% url 'cadastro_cliente' %}">Cadastre-se como cliente</a> ou
+        <a href="{% url 'cadastro_profissional' %}">como profissional</a>.
+    </p>
+  </div>
+{% endblock %}

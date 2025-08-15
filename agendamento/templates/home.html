@@ -4,25 +4,37 @@
 
 {% block content %}
   <style>
+    .servicos-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
     .servico-card {
       border: 1px solid #ddd;
       padding: 15px;
-      margin: 10px;
       border-radius: 8px;
       background-color: #fff;
+      width: 300px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .servico-card h3 {
+        margin-top: 0;
     }
   </style>
 
   <h1>Serviços Disponíveis</h1>
 
-  {% for servico in servicos %}
-    <div class="servico-card">
-      <h3>{{ servico.nome }}</h3>
-      <p><strong>Profissional:</strong> {{ servico.profissional.first_name }}</p>
-      <p><strong>Preço:</strong> R$ {{ servico.valor }}</p>
-      <a href="#">Agendar Agora</a> {# O link para agendamento será uma próxima view #}
-    </div>
-  {% empty %}
-    <p>Nenhum serviço cadastrado no momento.</p>
-  {% endfor %}
+  <div class="servicos-container">
+    {% for servico in servicos %}
+      <div class="servico-card">
+        <h3>{{ servico.nome }}</h3>
+        <p><strong>Profissional:</strong> {{ servico.profissional.first_name }}</p>
+        <p><strong>Preço:</strong> R$ {{ servico.valor }}</p>
+        <p><strong>Duração:</strong> {{ servico.duracao }}</p>
+        <a href="#">Agendar Agora</a> {# O link para agendamento será uma próxima view #}
+      </div>
+    {% empty %}
+      <p>Nenhum serviço cadastrado no momento.</p>
+    {% endfor %}
+  </div>
 {% endblock %}

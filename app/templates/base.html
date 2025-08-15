@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="pt-br">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}{% endblock %}</title>
+  <title>{% block title %}Sistema de Agendamento{% endblock %}</title>
   <style>
     body {
         font-family: 'Open Sans', sans-serif;
@@ -18,11 +19,17 @@
         text-align: center;
     }
 
+    main {
+        padding: 20px;
+        min-height: 70vh;
+    }
+
     footer {
         background-color: #ccc;
         color: #333;
         padding: 20px;
         text-align: center;
+        margin-top: 20px;
     }
 
     nav {
@@ -32,6 +39,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        padding: 0 20px;
     }
 
     nav ul {
@@ -56,15 +64,6 @@
     nav ul li a:hover {
         background-color: #32bbe8;
     }
-
-    nav ul li.active a {
-        background-color: #666;
-    }
-
-    nav ul li.active a:hover {
-        background-color: #999;
-    }
-
   </style>
 </head>
 <body>
@@ -97,8 +96,8 @@
   </main>
 
   <footer>
-    <p>© 2023 PintaBr Multimarcas</p>
+    <p>© 2024 Sistema de Agendamento</p>
   </footer>
 
-
-</body></html>
+</body>
+</html>

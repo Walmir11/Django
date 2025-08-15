@@ -8,7 +8,9 @@
 
   <h3>Sua Agenda de Hoje</h3>
   {# Aqui você irá mostrar a agenda do dia para o profissional #}
+  <p>Em breve, sua agenda aparecerá aqui.</p>
 
   <h3>Gerenciar Serviços</h3>
-  {# Aqui você pode adicionar links para criar/editar serviços #}
+  <a href="{% url 'servico_create' %}">Adicionar Novo Serviço</a>
+  {# Aqui você também pode listar os serviços já existentes com um link para editar/deletar #}
 {% endblock %}
