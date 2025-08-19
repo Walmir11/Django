@@ -1,14 +1,19 @@
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.urls import reverse_lazy
-from django.views.generic import CreateView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView, CreateView
+from django.urls import reverse_lazy
+from django.utils import timezone
+from agendamento.models import Agendamento, Servico
 from .forms import ClienteCreationForm, ProfissionalCreationForm
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login, logout
+from django.shortcuts import render, redirect
 
 class CadastroClienteView(CreateView):
+    """
+    View para o cadastro de novos usuários do tipo Cliente.
+    """
     form_class = ClienteCreationForm
-    template_name = 'register.html'
+    template_name = 'cadastro_form.html'
     success_url = reverse_lazy('login')
 
     def get_context_data(self, **kwargs):
@@ -16,9 +21,13 @@ class CadastroClienteView(CreateView):
         context['titulo_pagina'] = 'Cadastro de Cliente'
         return context
 
+
 class CadastroProfissionalView(CreateView):
+    """
+    View para o cadastro de novos usuários do tipo Profissional.
+    """
     form_class = ProfissionalCreationForm
-    template_name = 'register.html'
+    template_name = 'cadastro_form.html'
     success_url = reverse_lazy('login')
 
     def get_context_data(self, **kwargs):
@@ -26,12 +35,44 @@ class CadastroProfissionalView(CreateView):
         context['titulo_pagina'] = 'Cadastro de Profissional'
         return context
 
+
 class PainelView(LoginRequiredMixin, TemplateView):
+    """
+    View que direciona o usuário para o painel correto (cliente ou profissional)
+    e carrega os dados necessários para cada um.
+    """
+
     def get_template_names(self):
-        # Decide qual painel mostrar baseado no tipo de usuário
-        if self.request.user.user_type == 'PROFISSIONAL':
+        """Define qual template será usado com base no tipo de usuário."""
+        user = self.request.user
+        if user.user_type == 'CLIENTE':
+            return ['painel_cliente.html']
+        elif user.user_type == 'PROFISSIONAL':
             return ['painel_profissional.html']
-        return ['painel_cliente.html']
+        # Fallback para um template genérico, caso necessário
+        return ['painel_base.html']
+
+    def get_context_data(self, **kwargs):
+        """Adiciona os dados específicos de cada painel ao contexto."""
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        now = timezone.now()
+
+        if user.user_type == 'CLIENTE':
+            # Para clientes, busca os agendamentos futuros
+            context['agendamentos_futuros'] = Agendamento.objects.filter(
+                cliente=user, data_hora_inicio__gte=now
+            ).order_by('data_hora_inicio')
+
+        elif user.user_type == 'PROFISSIONAL':
+            # Para profissionais, busca a agenda de hoje e seus serviços
+            context['agenda_hoje'] = Agendamento.objects.filter(
+                servico__profissional=user, data_hora_inicio__date=now.date()
+            ).order_by('data_hora_inicio')
+            context['servicos'] = Servico.objects.filter(profissional=user)
+
+        return context
+
 
 def login_view(request):
     form = AuthenticationForm(request, data=request.POST or None)

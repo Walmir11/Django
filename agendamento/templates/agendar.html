@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Agendar {{ servico.nome }}{% endblock %}
+
+{% block content %}
+  <h1>Agendar Serviço: {{ servico.nome }}</h1>
+  <p><strong>Profissional:</strong> {{ servico.profissional.first_name }}</p>
+  <p><strong>Preço:</strong> R$ {{ servico.valor }}</p>
+  <p><strong>Duração:</strong> {{ servico.duracao }}</p>
+
+  <hr>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <p>Escolha a data e a hora para o agendamento:</p>
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Confirmar Agendamento</button>
+  </form>
+{% endblock %}

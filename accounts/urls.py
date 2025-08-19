@@ -1,5 +1,4 @@
 from django.urls import path
-from django.contrib.auth import views as auth_views
 from .views import CadastroClienteView, CadastroProfissionalView, PainelView
 from accounts.views import login_view, logout_view
 

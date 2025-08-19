@@ -42,12 +42,10 @@ class Agendamento(models.Model):
     cliente = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="agendamentos_feitos", limit_choices_to={"user_type": "CLIENTE"}
     )
-    profissional = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="agendamentos_recebidos", limit_choices_to={"user_type": "PROFISSIONAL"}
-    )
+    # O profissional pode ser acessado através do serviço (servico.profissional), tornando este campo redundante.
     servico = models.ForeignKey(Servico, on_delete=models.PROTECT)
     data_hora_inicio = models.DateTimeField("início do agendamento")
-    data_hora_fim = models.DateTimeField("fim do agendamento", blank=True)
+    data_hora_fim = models.DateTimeField("fim do agendamento", blank=True, editable=False)
     status = models.CharField(max_length=10, choices=StatusAgendamento.choices, default=StatusAgendamento.AGENDADO)
 
     def save(self, *args, **kwargs):
@@ -57,3 +55,7 @@ class Agendamento(models.Model):
 
     def __str__(self):
         return f"{self.servico.nome} para {self.cliente.first_name} em {self.data_hora_inicio.strftime('%d/%m/%Y %H:%M')}"
+
+    @property
+    def profissional(self):
+        return self.servico.profissional

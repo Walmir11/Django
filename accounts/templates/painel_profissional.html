@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Painel do Profissional{% endblock %}
+
+{% block content %}
+  <h2>Olá, {{ user.first_name }}!</h2>
+  <p>Bem-vindo(a) ao seu painel de profissional.</p>
+
+  <h3>Sua Agenda de Hoje</h3>
+  {% if agenda_hoje %}
+    <ul>
+      {% for agendamento in agenda_hoje %}
+        <li>
+          <strong>{{ agendamento.data_hora_inicio|time:"H:i" }}</strong> - {{ agendamento.servico.nome }}
+          <br>
+          Cliente: {{ agendamento.cliente.get_full_name }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Você não tem agendamentos para hoje.</p>
+  {% endif %}
+
+  <h3>Gerenciar Serviços</h3>
+  <a href="{% url 'servico_create' %}">Adicionar Novo Serviço</a>
+
+  {% if servicos %}
+    <ul>
+      {% for servico in servicos %}
+        <li>
+          {{ servico.nome }} - R$ {{ servico.valor }}
+          {# Adicione links para editar e deletar se tiver essas URLs configuradas #}
+          {# <a href="{% url 'servico_update' servico.id %}">Editar</a> | <a href="{% url 'servico_delete' servico.id %}">Excluir</a> #}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}

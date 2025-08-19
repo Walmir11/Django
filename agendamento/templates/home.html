@@ -31,7 +31,7 @@
         <p><strong>Profissional:</strong> {{ servico.profissional.first_name }}</p>
         <p><strong>Preço:</strong> R$ {{ servico.valor }}</p>
         <p><strong>Duração:</strong> {{ servico.duracao }}</p>
-        <a href="#">Agendar Agora</a> {# O link para agendamento será uma próxima view #}
+        <a href="{% url 'agendar_servico' servico.id %}">Agendar Agora</a>
       </div>
     {% empty %}
       <p>Nenhum serviço cadastrado no momento.</p>
