@@ -4,35 +4,60 @@
 
 {% block content %}
   <h2>Olá, {{ user.first_name }}!</h2>
-  <p>Bem-vindo(a) ao seu painel de profissional.</p>
+  <p>Bem-vindo(a) ao seu painel de controle.</p>
 
-  <h3>Sua Agenda de Hoje</h3>
-  {% if agenda_hoje %}
-    <ul>
-      {% for agendamento in agenda_hoje %}
-        <li>
-          <strong>{{ agendamento.data_hora_inicio|time:"H:i" }}</strong> - {{ agendamento.servico.nome }}
-          <br>
-          Cliente: {{ agendamento.cliente.get_full_name }}
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>Você não tem agendamentos para hoje.</p>
-  {% endif %}
+  <hr>
 
-  <h3>Gerenciar Serviços</h3>
-  <a href="{% url 'servico_create' %}">Adicionar Novo Serviço</a>
-
+  <h3>Seus Serviços</h3>
+  <a href="{% url 'criar_servico' %}" style="display: inline-block; margin-bottom: 15px; padding: 10px 15px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px;">+ Cadastrar Novo Serviço</a>
   {% if servicos %}
     <ul>
       {% for servico in servicos %}
         <li>
-          {{ servico.nome }} - R$ {{ servico.valor }}
-          {# Adicione links para editar e deletar se tiver essas URLs configuradas #}
-          {# <a href="{% url 'servico_update' servico.id %}">Editar</a> | <a href="{% url 'servico_delete' servico.id %}">Excluir</a> #}
+          {{ servico.nome }} - R$ {{ servico.valor|floatformat:2 }} ({{ servico.get_formatted_duration }})
+          <a href="{% url 'editar_servico' servico.pk %}" style="margin-left: 10px; font-size: 0.9em;">[Editar]</a>
         </li>
       {% endfor %}
     </ul>
+  {% else %}
+    <p>Você ainda não cadastrou nenhum serviço.</p>
+  {% endif %}
+
+  <hr>
+
+  <h3>Seus Próximos Atendimentos</h3>
+  {% if agendamentos_futuros %}
+    <ul>
+      {% for agendamento in agendamentos_futuros %}
+        <li>
+          <strong>Serviço:</strong> {{ agendamento.servico.nome }} (R$ {{ agendamento.servico.valor|floatformat:2 }})
+          <br>
+          <strong>Cliente:</strong> {{ agendamento.cliente.get_full_name }}
+          <br>
+          <strong>Data:</strong> {{ agendamento.data_hora_inicio|date:"d/m/Y" }} às {{ agendamento.data_hora_inicio|time:"H:i" }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Você não possui atendimentos futuros agendados.</p>
+  {% endif %}
+
+  <hr>
+
+  <h3>Histórico de Atendimentos</h3>
+  {% if agendamentos_passados %}
+    <ul>
+      {% for agendamento in agendamentos_passados %}
+        <li>
+          <strong>Serviço:</strong> {{ agendamento.servico.nome }} (R$ {{ agendamento.servico.valor|floatformat:2 }})
+          <br>
+          <strong>Cliente:</strong> {{ agendamento.cliente.get_full_name }}
+          <br>
+          <strong>Data:</strong> {{ agendamento.data_hora_inicio|date:"d/m/Y" }} às {{ agendamento.data_hora_inicio|time:"H:i" }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Você ainda não possui um histórico de atendimentos.</p>
   {% endif %}
 {% endblock %}

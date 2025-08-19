@@ -63,12 +63,20 @@ class PainelView(LoginRequiredMixin, TemplateView):
             context['agendamentos_futuros'] = Agendamento.objects.filter(
                 cliente=user, data_hora_inicio__gte=now
             ).order_by('data_hora_inicio')
+            # Adiciona a busca por agendamentos passados para o histórico
+            context['agendamentos_passados'] = Agendamento.objects.filter(
+                cliente=user, data_hora_inicio__lt=now
+            ).order_by('-data_hora_inicio')
 
         elif user.user_type == 'PROFISSIONAL':
-            # Para profissionais, busca a agenda de hoje e seus serviços
-            context['agenda_hoje'] = Agendamento.objects.filter(
-                servico__profissional=user, data_hora_inicio__date=now.date()
+            # Para profissionais, busca agendamentos futuros e passados
+            context['agendamentos_futuros'] = Agendamento.objects.filter(
+                servico__profissional=user, data_hora_inicio__gte=now
             ).order_by('data_hora_inicio')
+            context['agendamentos_passados'] = Agendamento.objects.filter(
+                servico__profissional=user, data_hora_inicio__lt=now
+            ).order_by('-data_hora_inicio')
+            # Mantém a lista de serviços que o profissional oferece
             context['servicos'] = Servico.objects.filter(profissional=user)
 
         return context

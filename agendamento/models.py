@@ -32,6 +32,14 @@ class Servico(models.Model):
     def __str__(self):
         return f"{self.nome} - {self.profissional.first_name}"
 
+    def get_formatted_duration(self):
+        if not self.duracao:
+            return "0:00"
+
+        total_seconds = int(self.duracao.total_seconds())
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        return f"{hours}:{minutes:02d}"
 
 class Agendamento(models.Model):
     class StatusAgendamento(models.TextChoices):

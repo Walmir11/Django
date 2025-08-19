@@ -1,9 +1,10 @@
-from django.views.generic import ListView, CreateView
+from django.views.generic import ListView, CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
 from .models import Servico, Agendamento
-from .forms import AgendamentoForm
+from .forms import AgendamentoForm, ServicoForm
 
 class HomePageView(ListView):
     """
@@ -19,7 +20,7 @@ class ServicoCreateView(LoginRequiredMixin, CreateView):
     View para que um profissional possa cadastrar um novo serviço.
     """
     model = Servico
-    fields = ['categoria', 'nome', 'valor', 'duracao']
+    form_class = ServicoForm
     template_name = 'servico_form.html'
     success_url = reverse_lazy('painel') # Redireciona para o painel após o sucesso
 
@@ -34,20 +35,47 @@ class ServicoCreateView(LoginRequiredMixin, CreateView):
         return context
 
 
+class ServicoUpdateView(LoginRequiredMixin, UpdateView):
+    """
+    View para que um profissional possa editar um de seus serviços.
+    """
+    model = Servico
+    form_class = ServicoForm
+    template_name = 'servico_form.html'
+    success_url = reverse_lazy('painel')
+
+    def get_queryset(self):
+        """
+        Garante que o profissional só possa editar os seus próprios serviços.
+        """
+        queryset = super().get_queryset()
+        return queryset.filter(profissional=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['titulo_pagina'] = f'Editar Serviço: "{self.object.nome}"'
+        return context
+
 class AgendamentoCreateView(LoginRequiredMixin, CreateView):
     """
     View para um cliente criar um novo agendamento para um serviço.
+    Impede que um profissional agende um serviço consigo mesmo.
     """
     model = Agendamento
     form_class = AgendamentoForm
     template_name = 'agendar.html'
-    success_url = reverse_lazy('home') # Redireciona para a home (ou um painel) após o sucesso
+    # Redireciona para o painel para que o usuário veja o agendamento na lista
+    success_url = reverse_lazy('painel')
 
     def dispatch(self, request, *args, **kwargs):
         """
-        Carrega o objeto 'servico' antes de qualquer outro método da view.
+        Carrega o 'servico' e garante que apenas usuários do tipo 'CLIENTE' possam agendar.
         """
         self.servico = get_object_or_404(Servico, pk=self.kwargs['servico_id'])
+        # Apenas usuários do tipo CLIENTE podem agendar.
+        if request.user.user_type == 'PROFISSIONAL':
+            messages.error(request, "Apenas clientes podem agendar serviços. Você está logado como um profissional.")
+            return redirect('painel')
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -58,9 +86,12 @@ class AgendamentoCreateView(LoginRequiredMixin, CreateView):
         return context
 
     def form_valid(self, form):
+        """
+        Define o cliente e o serviço antes de salvar e adiciona uma mensagem de sucesso.
+        """
         # Antes de salvar, preenche os campos que não vêm do formulário
-        agendamento = form.save(commit=False)
-        agendamento.cliente = self.request.user
-        agendamento.servico = self.servico # Agora self.servico existe tanto em GET quanto em POST
+        form.instance.cliente = self.request.user
+        form.instance.servico = self.servico
         # TODO: Adicionar validação de conflito de horário aqui
+        messages.success(self.request, f"Serviço '{self.servico.nome}' agendado com sucesso!")
         return super().form_valid(form)

@@ -3,12 +3,56 @@
 {% block title %}{{ titulo_pagina }}{% endblock %}
 
 {% block content %}
-
-    <h2>{{ titulo_pagina }}</h2>
-    <form method="post">
+  <style>
+    .form-container {
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .form-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .form-container .form-field {
+      margin-bottom: 15px;
+    }
+    .form-container label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .form-container input,
+    .form-container select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box; /* Important */
+    }
+    .form-container button {
+      width: 100%;
+      padding: 10px;
+      background-color: #0096c7;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .form-container button:hover {
+      background-color: #0077a2;
+    }
+  </style>
+  <div class="form-container">
+    <form method="post" novalidate>
+      <h2>{{ titulo_pagina }}</h2>
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Salvar Serviço</button>
+      <button type="submit">Salvar Serviço</button>
     </form>
-
+  </div>
 {% endblock %}

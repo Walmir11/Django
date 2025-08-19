@@ -21,4 +21,19 @@
   {% else %}
     <p>Você não possui agendamentos futuros.</p>
   {% endif %}
+
+  <h3>Histórico de Agendamentos</h3>
+  {% if agendamentos_passados %}
+    <ul>
+      {% for agendamento in agendamentos_passados %}
+        <li>
+          <strong>{{ agendamento.servico.nome }}</strong> com {{ agendamento.profissional.get_full_name }}
+          <br>
+          Data: {{ agendamento.data_hora_inicio|date:"d/m/Y" }} às {{ agendamento.data_hora_inicio|time:"H:i" }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Você não possui um histórico de agendamentos.</p>
+  {% endif %}
 {% endblock %}

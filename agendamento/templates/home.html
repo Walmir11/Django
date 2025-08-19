@@ -30,8 +30,10 @@
         <h3>{{ servico.nome }}</h3>
         <p><strong>Profissional:</strong> {{ servico.profissional.first_name }}</p>
         <p><strong>Preço:</strong> R$ {{ servico.valor }}</p>
-        <p><strong>Duração:</strong> {{ servico.duracao }}</p>
-        <a href="{% url 'agendar_servico' servico.id %}">Agendar Agora</a>
+        <p><strong>Duração:</strong> {{ servico.get_formatted_duration }}</p>
+        {% if user.is_authenticated and user.user_type == 'CLIENTE' %}
+          <a href="{% url 'agendar_servico' servico.id %}">Agendar Agora</a>
+        {% endif %}
       </div>
     {% empty %}
       <p>Nenhum serviço cadastrado no momento.</p>
