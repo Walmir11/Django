@@ -45,12 +45,10 @@ class PainelView(LoginRequiredMixin, TemplateView):
     def get_template_names(self):
         """Define qual template será usado com base no tipo de usuário."""
         user = self.request.user
-        if user.user_type == 'CLIENTE':
-            return ['painel_cliente.html']
-        elif user.user_type == 'PROFISSIONAL':
+        if user.user_type == 'PROFISSIONAL' or user.is_superuser:
             return ['painel_profissional.html']
-        # Fallback para um template genérico, caso necessário
-        return ['painel_base.html']
+        elif user.user_type == 'CLIENTE':
+            return ['painel_cliente.html']
 
     def get_context_data(self, **kwargs):
         """Adiciona os dados específicos de cada painel ao contexto."""
