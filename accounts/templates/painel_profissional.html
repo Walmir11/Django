@@ -14,7 +14,7 @@
     <ul>
       {% for servico in servicos %}
         <li>
-          {{ servico.nome }} - R$ {{ servico.valor|floatformat:2 }} ({{ servico.get_formatted_duration }})
+          {{ servico.nome }} - R$ {{ servico.valor|floatformat:2 }} - Duração(Horas): {{ servico.get_formatted_duration }}
           <a href="{% url 'editar_servico' servico.pk %}" style="margin-left: 10px; font-size: 0.9em;">[Editar]</a>
         </li>
       {% endfor %}
