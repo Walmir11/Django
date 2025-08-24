@@ -14,6 +14,19 @@ class HomePageView(ListView):
     template_name = 'home.html'
     context_object_name = 'servicos' # Nome da variável no template
 
+    def get_queryset(self):
+        """
+        Sobrescreve o queryset padrão.
+        - Se o usuário for um profissional, mostra apenas os seus serviços.
+        - Para outros usuários (clientes, anônimos), mostra todos os serviços.
+        """
+        user = self.request.user
+        if user.is_authenticated and user.user_type == 'PROFISSIONAL':
+            # Retorna apenas os serviços pertencentes ao profissional logado.
+            return Servico.objects.filter(profissional=user)
+        # Para todos os outros casos, retorna todos os serviços.
+        return Servico.objects.all()
+
 
 class ServicoCreateView(LoginRequiredMixin, CreateView):
     """

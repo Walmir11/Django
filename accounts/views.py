@@ -66,7 +66,7 @@ class PainelView(LoginRequiredMixin, TemplateView):
                 cliente=user, data_hora_inicio__lt=now
             ).order_by('-data_hora_inicio')
 
-        elif user.user_type == 'PROFISSIONAL':
+        elif user.user_type == 'PROFISSIONAL' or user.is_superuser:
             # Para profissionais, busca agendamentos futuros e passados
             context['agendamentos_futuros'] = Agendamento.objects.filter(
                 servico__profissional=user, data_hora_inicio__gte=now
