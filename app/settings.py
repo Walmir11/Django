@@ -137,3 +137,15 @@ AUTH_USER_MODEL = 'accounts.User'
 
 LOGIN_REDIRECT_URL = 'painel' # Rota para onde o usuário vai após o login
 LOGOUT_REDIRECT_URL = 'login' # Rota para onde o usuário vai após o logout
+
+# # Configuração de E-mail para Desenvolvimento (imprime no console)
+# DEFAULT_FROM_EMAIL = 'naoresponda281@gmail.com'
+#
+# # Configuração de E-mail para Produção (usando Gmail)
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = env('EMAIL_HOST_USER') # Carrega o email do .env
+# EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD') # Carrega a senha de app do .env
+# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER # O remetente padrão é o próprio email
