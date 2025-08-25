@@ -3,61 +3,204 @@
 {% block title %}Painel do Profissional{% endblock %}
 
 {% block content %}
-  <h2>Olá, {{ user.first_name }}!</h2>
-  <p>Bem-vindo(a) ao seu painel de controle.</p>
+<style>
+  /* Estilos do Painel (Reutilizáveis) */
+  body {
+    background-color: #f4f7f6;
+  }
+  .painel-container {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+  }
+  .painel-header h2 {
+    color: #2c3e50;
+    font-weight: 600;
+  }
+  .painel-header p {
+    color: #555;
+    font-size: 1.1em;
+  }
+  .painel-card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 25px 30px;
+    margin-top: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .painel-card h3 {
+    color: #2c3e50;
+    margin-top: 0;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .lista-itens {
+    list-style: none;
+    padding: 0;
+  }
+  .lista-itens li {
+    padding: 15px 5px;
+    border-bottom: 1px solid #f0f0f0;
+    line-height: 1.6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .lista-itens li:last-child {
+    border-bottom: none;
+  }
+  .lista-itens strong {
+    color: #34495e;
+  }
+  .btn-novo-servico {
+    display: inline-block;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    background-color: #3498db;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+  }
+  .btn-novo-servico:hover {
+    background-color: #2980b9;
+  }
 
-  <hr>
+  /* Estilos do Modal (Pop-up) */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+  }
+  .modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 8px;
+    max-width: 700px;
+    position: relative;
+  }
+  .close-button {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .btn-historico {
+    padding: 10px 20px;
+    background-color: #34495e;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 20px;
+  }
+</style>
 
-  <h3>Seus Serviços</h3>
-  <a href="{% url 'criar_servico' %}" style="display: inline-block; margin-bottom: 15px; padding: 10px 15px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px;">+ Cadastrar Novo Serviço</a>
-  {% if servicos %}
-    <ul>
-      {% for servico in servicos %}
-        <li>
-          {{ servico.nome }} - R$ {{ servico.valor|floatformat:2 }} - Duração(Horas): {{ servico.get_formatted_duration }}
-          <a href="{% url 'editar_servico' servico.pk %}" style="margin-left: 10px; font-size: 0.9em;">[Editar]</a>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>Você ainda não cadastrou nenhum serviço.</p>
-  {% endif %}
+<div class="painel-container">
+  <div class="painel-header">
+    <h2>Olá, {{ user.first_name }}!</h2>
+    <p>Bem-vindo(a) ao seu painel de controle.</p>
+  </div>
 
-  <hr>
+  <div class="painel-card">
+    <h3>Seus Serviços</h3>
+    <a href="{% url 'criar_servico' %}" class="btn-novo-servico">+ Cadastrar Novo Serviço</a>
+    {% if servicos %}
+      <ul class="lista-itens">
+        {% for servico in servicos %}
+          <li>
+            <span>{{ servico.nome }} - R$ {{ servico.valor|floatformat:2 }} - Duração: {{ servico.get_formatted_duration }}</span>
+            <a href="{% url 'editar_servico' servico.pk %}">Editar</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Você ainda não cadastrou nenhum serviço.</p>
+    {% endif %}
+  </div>
 
-  <h3>Seus Próximos Atendimentos</h3>
-  {% if agendamentos_futuros %}
-    <ul>
-      {% for agendamento in agendamentos_futuros %}
-        <li>
-          <strong>Serviço:</strong> {{ agendamento.servico.nome }} (R$ {{ agendamento.servico.valor|floatformat:2 }})
-          <br>
-          <strong>Cliente:</strong> {{ agendamento.cliente.get_full_name }}
-          <br>
-          <strong>Data:</strong> {{ agendamento.data_hora_inicio|date:"d/m/Y" }} às {{ agendamento.data_hora_inicio|time:"H:i" }}
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>Você não possui atendimentos futuros agendados.</p>
-  {% endif %}
+  <div class="painel-card">
+    <h3>Seus Próximos Atendimentos</h3>
+    {% if agendamentos_futuros %}
+      <ul class="lista-itens">
+        {% for agendamento in agendamentos_futuros %}
+          <li>
+            <div>
+              <strong>Serviço:</strong> {{ agendamento.servico.nome }} (R$ {{ agendamento.servico.valor|floatformat:2 }})
+              <br>
+              <strong>Cliente:</strong> {{ agendamento.cliente.get_full_name }}
+              <br>
+              <strong>Data:</strong> {{ agendamento.data_hora_inicio|date:"d/m/Y" }} às {{ agendamento.data_hora_inicio|time:"H:i" }}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Você não possui atendimentos futuros agendados.</p>
+    {% endif %}
+  </div>
 
-  <hr>
+  <button id="historicoBtn" class="btn-historico">Ver Histórico de Atendimentos</button>
+</div>
 
-  <h3>Histórico de Atendimentos</h3>
-  {% if agendamentos_passados %}
-    <ul>
-      {% for agendamento in agendamentos_passados %}
-        <li>
-          <strong>Serviço:</strong> {{ agendamento.servico.nome }} (R$ {{ agendamento.servico.valor|floatformat:2 }})
-          <br>
-          <strong>Cliente:</strong> {{ agendamento.cliente.get_full_name }}
-          <br>
-          <strong>Data:</strong> {{ agendamento.data_hora_inicio|date:"d/m/Y" }} às {{ agendamento.data_hora_inicio|time:"H:i" }}
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>Você ainda não possui um histórico de atendimentos.</p>
-  {% endif %}
+<!-- O Modal (Pop-up) do Histórico -->
+<div id="historicoModal" class="modal">
+  <div class="modal-content">
+    <span class="close-button">&times;</span>
+    <h3>Histórico de Atendimentos</h3>
+    {% if agendamentos_passados %}
+      <ul class="lista-itens">
+        {% for agendamento in agendamentos_passados %}
+          <li>
+            <div>
+              <strong>Serviço:</strong> {{ agendamento.servico.nome }} (R$ {{ agendamento.servico.valor|floatformat:2 }})
+              <br>
+              <strong>Cliente:</strong> {{ agendamento.cliente.get_full_name }}
+              <br>
+              <strong>Data:</strong> {{ agendamento.data_hora_inicio|date:"d/m/Y" }} às {{ agendamento.data_hora_inicio|time:"H:i" }}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Você ainda não possui um histórico de atendimentos.</p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  // Pega os elementos do modal
+  var modal = document.getElementById("historicoModal");
+  var btn = document.getElementById("historicoBtn");
+  var span = document.getElementsByClassName("close-button")[0];
+
+  // Quando o usuário clica no botão, abre o modal
+  btn.onclick = function() {
+    modal.style.display = "block";
+  }
+
+  // Quando o usuário clica no (x), fecha o modal
+  span.onclick = function() {
+    modal.style.display = "none";
+  }
+
+  // Quando o usuário clica fora do modal, ele fecha
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  }
+</script>
 {% endblock %}

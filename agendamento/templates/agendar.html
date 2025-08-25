@@ -3,17 +3,87 @@
 {% block title %}Agendar {{ servico.nome }}{% endblock %}
 
 {% block content %}
-  <h1>Agendar Serviço: {{ servico.nome }}</h1>
-  <p><strong>Profissional:</strong> {{ servico.profissional.first_name }}</p>
-  <p><strong>Preço:</strong> R$ {{ servico.valor }}</p>
-  <p><strong>Duração:</strong> {{ servico.get_formatted_duration }}</p>
+<style>
+  /* Estilos para criar um painel centralizado e elegante */
+  body {
+    background-color: #f4f7f6;
+  }
+  .agendamento-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px 40px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-top: 4px solid #3498db;
+  }
+  .agendamento-container h1 {
+    color: #2c3e50;
+    margin-top: 0;
+    text-align: center;
+    font-size: 24px;
+  }
+  .agendamento-container p, .agendamento-container h3 {
+    color: #555;
+    line-height: 1.6;
+  }
+  .servico-detalhes {
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: center;
+  }
+  .servico-detalhes h3 {
+      color: #2c3e50;
+      margin-bottom: 15px;
+  }
+  /* Estilizando os labels que o Django gera com form.as_p */
+  form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #34495e;
+  }
+  /* Estilizando os inputs que o Django gera */
+  form input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Garante que o padding não afete a largura total */
+  }
+  .btn-confirmar {
+    display: block;
+    width: 100%;
+    padding: 12px 15px;
+    background-color: #3498db;
+    color: #fff;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+  }
+  .btn-confirmar:hover {
+    background-color: #2980b9;
+  }
+</style>
 
-  <hr>
+<div class="agendamento-container">
+  <h1>Confirmar Agendamento</h1>
+
+  <div class="servico-detalhes">
+    <h3>{{ servico.nome }}</h3>
+    <p><strong>Profissional:</strong> {{ servico.profissional.first_name }} | <strong>Preço:</strong> R$ {{ servico.valor }} | <strong>Duração:</strong> {{ servico.get_formatted_duration }}</p>
+  </div>
 
   <form method="post" novalidate>
     {% csrf_token %}
     <p>Escolha a data e a hora para o agendamento:</p>
     {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Confirmar Agendamento</button>
+    <button type="submit" class="btn-confirmar">Confirmar Agendamento</button>
   </form>
+</div>
 {% endblock %}

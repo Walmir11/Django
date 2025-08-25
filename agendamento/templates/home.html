@@ -4,21 +4,56 @@
 
 {% block content %}
   <style>
+    /* É uma boa prática mover este CSS para um arquivo externo, como 'static/css/styles.css' */
+    body {
+      background-color: #f4f7f6; /* Fundo suave para não cansar a vista */
+    }
+    h1 {
+      color: #2c3e50; /* Azul-acinzentado escuro para o título principal */
+      text-align: center;
+      margin-bottom: 40px;
+    }
     .servicos-container {
       display: flex;
       flex-wrap: wrap;
       gap: 20px;
+      justify-content: center; /* Centraliza os cards no container */
     }
     .servico-card {
-      border: 1px solid #ddd;
-      padding: 15px;
+      border: 1px solid #e0e0e0;
+      border-top: 4px solid #3498db; /* Destaque azul no topo do card */
+      padding: 20px;
       border-radius: 8px;
       background-color: #fff;
       width: 300px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .servico-card:hover {
+      transform: translateY(-5px); /* Efeito de "levantar" ao passar o mouse */
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     }
     .servico-card h3 {
-        margin-top: 0;
+      margin-top: 0;
+      color: #2c3e50; /* Mesma cor do título principal para consistência */
+    }
+    .servico-card p {
+      color: #555; /* Cinza escuro para o texto, mais suave que preto */
+      line-height: 1.6;
+    }
+    .servico-card a {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 15px;
+      background-color: #3498db; /* Cor primária para o botão de ação */
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      transition: background-color 0.2s ease;
+    }
+    .servico-card a:hover {
+      background-color: #2980b9; /* Tom mais escuro do azul no hover */
     }
   </style>
 
@@ -30,9 +65,9 @@
         <h3>{{ servico.nome }}</h3>
         <p><strong>Profissional:</strong> {{ servico.profissional.first_name }}</p>
         <p><strong>Preço:</strong> R$ {{ servico.valor }}</p>
-        <p><strong>Duração(Horas):</strong> {{ servico.get_formatted_duration }}</p>
+        <p><strong>Duração:</strong> {{ servico.get_formatted_duration }}</p>
         {% if user.is_authenticated and user.user_type == 'CLIENTE' %}
-          <a href="{% url 'agendar_servico' servico.id %}">Agendar Agora</a>
+          <a href="{% url 'agendar_servico' servico.id %}">Agendar Serviço</a>
         {% endif %}
       </div>
     {% empty %}
