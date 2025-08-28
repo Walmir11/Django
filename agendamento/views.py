@@ -78,6 +78,12 @@ class AgendamentoCreateView(LoginRequiredMixin, CreateView):
             return redirect('painel')
         return super().dispatch(request, *args, **kwargs)
 
+    def get_form_kwargs(self):
+        """Passa o objeto 'servico' para o __init__ do formulário."""
+        kwargs = super().get_form_kwargs()
+        kwargs['servico'] = self.servico
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['servico'] = self.servico

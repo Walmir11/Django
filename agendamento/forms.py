@@ -77,6 +77,11 @@ class ServicoForm(forms.ModelForm):
 
 
 class AgendamentoForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        # Remove 'servico' de kwargs antes de chamar o super(), pois o ModelForm não o espera.
+        self.servico = kwargs.pop('servico', None)
+        super().__init__(*args, **kwargs)
+
     class Meta:
         model = Agendamento
         fields = ['data_hora_inicio']
@@ -84,6 +89,36 @@ class AgendamentoForm(forms.ModelForm):
             'data_hora_inicio': forms.DateTimeInput(
                 attrs={'type': 'datetime-local', 'class': 'form-control'})
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        data_hora_inicio = cleaned_data.get("data_hora_inicio")
+
+        if data_hora_inicio and self.servico:
+            profissional = self.servico.profissional
+            duracao = self.servico.duracao
+            data_hora_fim = data_hora_inicio + duracao
+
+            # Query para encontrar agendamentos sobrepostos para o mesmo profissional.
+            # Um agendamento sobrepõe se:
+            # (start1 < end2) and (end1 > start2)
+            agendamentos_sobrepostos = Agendamento.objects.filter(
+                servico__profissional=profissional,
+                status=Agendamento.StatusAgendamento.AGENDADO,
+                data_hora_inicio__lt=data_hora_fim,  # O novo agendamento começa antes que o existente termine
+                data_hora_fim__gt=data_hora_inicio,   # O novo agendamento termina depois que o existente começa
+            )
+
+            # Se estivermos editando um agendamento, precisamos excluí-lo da verificação.
+            if self.instance and self.instance.pk:
+                agendamentos_sobrepostos = agendamentos_sobrepostos.exclude(pk=self.instance.pk)
+
+            if agendamentos_sobrepostos.exists():
+                raise forms.ValidationError(
+                    "Este horário já está ocupado por outro agendamento para este profissional. Por favor, escolha outro horário."
+                )
+
+        return cleaned_data
 
 
 class CancelamentoAgendamentoForm(forms.Form):
