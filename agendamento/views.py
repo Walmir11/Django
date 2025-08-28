@@ -6,7 +6,9 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-from .models import Servico, Agendamento
+from django.http import JsonResponse
+from datetime import datetime, time, timedelta
+from .models import Servico, Agendamento, Categoria
 from .forms import ServicoForm, AgendamentoForm, CancelamentoAgendamentoForm
 
 
@@ -135,3 +137,64 @@ def cancelar_agendamento(request, agendamento_id):
 
     context = {'form': form, 'agendamento': agendamento, 'titulo_pagina': 'Cancelar Agendamento'}
     return render(request, 'cancelar_agendamento.html', context)
+
+
+@login_required
+def buscar_horarios_disponiveis(request, servico_id):
+    """
+    Retorna uma lista de horários disponíveis em formato JSON para um determinado serviço e data.
+    """
+    data_str = request.GET.get('data')
+    if not data_str:
+        return JsonResponse({'error': 'A data não foi fornecida.'}, status=400)
+
+    try:
+        data = datetime.strptime(data_str, '%Y-%m-%d').date()
+    except ValueError:
+        return JsonResponse({'error': 'Formato de data inválido. Use YYYY-MM-DD.'}, status=400)
+
+    servico = get_object_or_404(Servico, pk=servico_id)
+    profissional = servico.profissional
+    duracao = servico.duracao
+
+    # --- Lógica para gerar horários ---
+    # TODO: Futuramente, buscar estes horários de um modelo do Profissional
+    horario_inicio_trabalho = time(9, 0)
+    horario_fim_trabalho = time(18, 0)
+
+    # Pega todos os agendamentos do profissional para o dia
+    agendamentos_do_dia = Agendamento.objects.filter(
+        servico__profissional=profissional,
+        data_hora_inicio__date=data,
+        status=Agendamento.StatusAgendamento.AGENDADO
+    ).values('data_hora_inicio', 'data_hora_fim')
+
+    horarios_disponiveis = []
+    slot_atual = datetime.combine(data, horario_inicio_trabalho)
+
+    while slot_atual.time() < horario_fim_trabalho:
+        slot_fim = slot_atual + duracao
+
+        # O slot só é válido se terminar dentro do expediente
+        if slot_fim.time() > horario_fim_trabalho and not (slot_fim.time() == horario_fim_trabalho and slot_fim.second == 0):
+             break
+
+        # Verifica se o slot atual está no passado
+        if slot_atual < timezone.now():
+            slot_atual += timedelta(minutes=15) # Incrementa para o próximo bloco
+            continue
+
+        # Verifica se o slot se sobrepõe a um agendamento existente
+        sobreposto = False
+        for agendamento in agendamentos_do_dia:
+            if max(slot_atual, agendamento['data_hora_inicio']) < min(slot_fim, agendamento['data_hora_fim']):
+                sobreposto = True
+                break
+
+        if not sobreposto:
+            horarios_disponiveis.append(slot_atual.strftime('%H:%M'))
+
+        # Incrementa o slot. Usar um intervalo fixo (ex: 15 min) permite mais flexibilidade.
+        slot_atual += timedelta(minutes=15)
+
+    return JsonResponse({'horarios': horarios_disponiveis})

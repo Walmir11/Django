@@ -1,6 +1,7 @@
 from django import forms
 from .models import Agendamento, Servico
-from datetime import timedelta
+from datetime import timedelta, time
+from django.utils import timezone
 
 class DurationWidget(forms.MultiWidget):
     """
@@ -94,29 +95,61 @@ class AgendamentoForm(forms.ModelForm):
         cleaned_data = super().clean()
         data_hora_inicio = cleaned_data.get("data_hora_inicio")
 
-        if data_hora_inicio and self.servico:
-            profissional = self.servico.profissional
-            duracao = self.servico.duracao
-            data_hora_fim = data_hora_inicio + duracao
+        if not data_hora_inicio or not self.servico:
+            return cleaned_data
 
-            # Query para encontrar agendamentos sobrepostos para o mesmo profissional.
-            # Um agendamento sobrepõe se:
-            # (start1 < end2) and (end1 > start2)
-            agendamentos_sobrepostos = Agendamento.objects.filter(
-                servico__profissional=profissional,
-                status=Agendamento.StatusAgendamento.AGENDADO,
-                data_hora_inicio__lt=data_hora_fim,  # O novo agendamento começa antes que o existente termine
-                data_hora_fim__gt=data_hora_inicio,   # O novo agendamento termina depois que o existente começa
+        # Validação 1: Não permitir agendamentos no passado.
+        if data_hora_inicio < timezone.now():
+            raise forms.ValidationError("Não é possível fazer um agendamento em uma data ou hora passada.")
+
+        profissional = self.servico.profissional
+        duracao = self.servico.duracao
+        data_hora_fim = data_hora_inicio + duracao
+
+        # Validação 2: Verificar sobreposição de horários.
+        conflitos = Agendamento.objects.filter(
+            servico__profissional=profissional,
+            status=Agendamento.StatusAgendamento.AGENDADO,
+            data_hora_inicio__lt=data_hora_fim,
+            data_hora_fim__gt=data_hora_inicio,
+        )
+
+        # Se estiver editando, exclui o próprio agendamento da verificação
+        if self.instance and self.instance.pk:
+            conflitos = conflitos.exclude(pk=self.instance.pk)
+
+        if conflitos.exists():
+            # Se encontrou um conflito, vamos sugerir o próximo horário vago.
+            ultimo_conflito_fim = conflitos.order_by('-data_hora_fim').first().data_hora_fim
+            proximo_slot_proposto = ultimo_conflito_fim
+
+            # TODO: Buscar estes horários de um modelo do Profissional
+            horario_fim_trabalho = time(18, 0)
+
+            while True:
+                # O slot proposto deve terminar dentro do expediente
+                if (proximo_slot_proposto + duracao).time() > horario_fim_trabalho:
+                    raise forms.ValidationError(
+                        "Este horário está ocupado e não há outros horários disponíveis hoje. Por favor, tente outra data."
+                    )
+
+                # Verifica se o slot proposto conflita com outro agendamento
+                proximo_conflito = Agendamento.objects.filter(
+                    servico__profissional=profissional,
+                    status=Agendamento.StatusAgendamento.AGENDADO,
+                    data_hora_inicio__lt=(proximo_slot_proposto + duracao),
+                    data_hora_fim__gt=proximo_slot_proposto,
+                ).order_by('data_hora_inicio').first()
+
+                if not proximo_conflito:
+                    break  # Nenhum conflito encontrado, este é o próximo slot livre!
+                else:
+                    proximo_slot_proposto = proximo_conflito.data_hora_fim
+
+            horario_sugerido = proximo_slot_proposto.strftime('%H:%M')
+            raise forms.ValidationError(
+                f"Este horário está ocupado. O próximo horário livre neste dia é às {horario_sugerido}."
             )
-
-            # Se estivermos editando um agendamento, precisamos excluí-lo da verificação.
-            if self.instance and self.instance.pk:
-                agendamentos_sobrepostos = agendamentos_sobrepostos.exclude(pk=self.instance.pk)
-
-            if agendamentos_sobrepostos.exists():
-                raise forms.ValidationError(
-                    "Este horário já está ocupado por outro agendamento para este profissional. Por favor, escolha outro horário."
-                )
 
         return cleaned_data
 
