@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+<style>
+  .cancel-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .cancel-container h3 {
+    color: #c82333;
+    margin-top: 0;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .agendamento-details {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border: 1px solid #dee2e6;
+  }
+  .agendamento-details ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+</style>
+
+<div class="cancel-container">
+    <h3>{{ titulo_pagina }}</h3>
+    <div class="agendamento-details">
+        <p>Você está prestes a cancelar o seguinte agendamento:</p>
+        <ul>
+            <li><strong>Serviço:</strong> {{ agendamento.servico.nome }}</li>
+            <li><strong>Profissional:</strong> {{ agendamento.profissional.get_full_name }}</li>
+            <li><strong>Data e Hora:</strong> {{ agendamento.data_hora_inicio|date:"d/m/Y H:i" }}</li>
+        </ul>
+    </div>
+    <p style="color: #721c24;"><strong>Atenção:</strong> Esta ação não pode ser desfeita.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-danger mt-3">Confirmar Cancelamento</button>
+        <a href="{% url 'painel' %}" class="btn btn-secondary mt-3">Voltar</a>
+    </form>
+</div>
+{% endblock %}

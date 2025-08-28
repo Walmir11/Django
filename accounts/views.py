@@ -2,11 +2,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, CreateView
 from django.urls import reverse_lazy
 from django.utils import timezone
-from agendamento.models import Agendamento, Servico
 from .forms import ClienteCreationForm, ProfissionalCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.shortcuts import render, redirect
+from agendamento.models import Agendamento, Servico
 
 class CadastroClienteView(CreateView):
     """
@@ -56,24 +56,30 @@ class PainelView(LoginRequiredMixin, TemplateView):
         user = self.request.user
         now = timezone.now()
 
+        # Base queryset para os agendamentos do usuário logado
         if user.user_type == 'CLIENTE':
-            # Para clientes, busca os agendamentos futuros
-            context['agendamentos_futuros'] = Agendamento.objects.filter(
-                cliente=user, data_hora_inicio__gte=now
-            ).order_by('data_hora_inicio')
-            # Adiciona a busca por agendamentos passados para o histórico
-            context['agendamentos_passados'] = Agendamento.objects.filter(
-                cliente=user, data_hora_inicio__lt=now
-            ).order_by('-data_hora_inicio')
-
+            base_queryset = Agendamento.objects.filter(cliente=user)
         elif user.user_type == 'PROFISSIONAL' or user.is_superuser:
-            # Para profissionais, busca agendamentos futuros e passados
-            context['agendamentos_futuros'] = Agendamento.objects.filter(
-                servico__profissional=user, data_hora_inicio__gte=now
-            ).order_by('data_hora_inicio')
-            context['agendamentos_passados'] = Agendamento.objects.filter(
-                servico__profissional=user, data_hora_inicio__lt=now
-            ).order_by('-data_hora_inicio')
+            base_queryset = Agendamento.objects.filter(servico__profissional=user)
+        else:
+            base_queryset = Agendamento.objects.none()
+
+        # Filtra agendamentos por status
+        context['agendamentos_futuros'] = base_queryset.filter(
+            data_hora_inicio__gte=now, status=Agendamento.StatusAgendamento.AGENDADO
+        ).order_by('data_hora_inicio')
+
+        # Considera agendamentos passados como concluídos ou agendados (que não ocorreram)
+        context['agendamentos_passados'] = base_queryset.filter(
+            data_hora_inicio__lt=now, status__in=[Agendamento.StatusAgendamento.AGENDADO, Agendamento.StatusAgendamento.CONCLUIDO]
+        ).order_by('-data_hora_inicio')
+
+        context['agendamentos_cancelados'] = base_queryset.filter(
+            status=Agendamento.StatusAgendamento.CANCELADO
+        ).order_by('-data_hora_inicio')
+
+        # Adiciona contexto específico para cada tipo de usuário
+        if user.user_type == 'PROFISSIONAL' or user.is_superuser:
             # Mantém a lista de serviços que o profissional oferece
             context['servicos'] = Servico.objects.filter(profissional=user)
 
@@ -84,15 +90,12 @@ def login_view(request):
     form = AuthenticationForm(request, data=request.POST or None)
     if request.method == 'POST':
         if form.is_valid():
-            # Como o USERNAME_FIELD é 'email', o form.cleaned_data['username'] conterá o email.
             user = form.get_user()
             if user is not None:
                 login(request, user)
                 return redirect('painel')
-    # Passa o formulário (com erros, se houver) para o template com o nome 'form'
     return render(request, 'login.html', {'form': form})
 
 def logout_view(request):
     logout(request)
-    # Redireciona para a URL de login, conforme definido em settings.py
     return redirect('login')

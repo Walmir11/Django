@@ -84,3 +84,12 @@ class AgendamentoForm(forms.ModelForm):
             'data_hora_inicio': forms.DateTimeInput(
                 attrs={'type': 'datetime-local', 'class': 'form-control'})
         }
+
+
+class CancelamentoAgendamentoForm(forms.Form):
+    motivo = forms.CharField(
+        label='Motivo do Cancelamento',
+        widget=forms.Textarea(attrs={'rows': 4, 'placeholder': 'Por favor, descreva o motivo do cancelamento.', 'class': 'form-control'}),
+        required=True,
+        help_text='O motivo é obrigatório para o cancelamento.'
+    )

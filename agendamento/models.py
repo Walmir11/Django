@@ -55,6 +55,13 @@ class Agendamento(models.Model):
     data_hora_inicio = models.DateTimeField("início do agendamento")
     data_hora_fim = models.DateTimeField("fim do agendamento", blank=True, editable=False)
     status = models.CharField(max_length=10, choices=StatusAgendamento.choices, default=StatusAgendamento.AGENDADO)
+    motivo_cancelamento = models.TextField("Motivo do Cancelamento", blank=True, null=True)
+    cancelado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='agendamentos_cancelados'
+    )
 
     def save(self, *args, **kwargs):
         if self.data_hora_inicio and self.servico:

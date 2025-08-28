@@ -144,11 +144,35 @@
               <br>
               <strong>Data:</strong> {{ agendamento.data_hora_inicio|date:"d/m/Y" }} às {{ agendamento.data_hora_inicio|time:"H:i" }}
             </div>
+            <a href="{% url 'cancelar_agendamento' agendamento.id %}" style="color: #dc3545; text-decoration: none; font-weight: bold;">Cancelar</a>
           </li>
         {% endfor %}
       </ul>
     {% else %}
       <p>Você não possui atendimentos futuros agendados.</p>
+    {% endif %}
+  </div>
+
+  <div class="painel-card">
+    <h3>Atendimentos Cancelados</h3>
+    {% if agendamentos_cancelados %}
+      <ul class="lista-itens">
+        {% for agendamento in agendamentos_cancelados %}
+          <li>
+            <div>
+              <strong style="text-decoration: line-through;">Serviço: {{ agendamento.servico.nome }}</strong>
+              <br>
+              <strong>Cliente:</strong> {{ agendamento.cliente.get_full_name }}
+              <br>
+              <span style="text-decoration: line-through;"><strong>Data:</strong> {{ agendamento.data_hora_inicio|date:"d/m/Y" }} às {{ agendamento.data_hora_inicio|time:"H:i" }}</span>
+              <br>
+              <small><strong>Motivo:</strong> {{ agendamento.motivo_cancelamento|default:"Não informado" }} (Cancelado por: {{ agendamento.cancelado_por.get_full_name|default:"Sistema" }})</small>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Nenhum atendimento foi cancelado.</p>
     {% endif %}
   </div>
 
